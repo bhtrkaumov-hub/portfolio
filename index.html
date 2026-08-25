@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Backy — начинающий веб-разработчик</title>
+
+  <style>
+    /* ==========================================================
+       ЦВЕТА — глубокая синь, изумруд, сталь
+       ========================================================== */
+    :root {
+      --steklo:   rgba(255,255,255,0.045);
+      --ramka:    rgba(140,200,190,0.16);
+      --tekst:    #e4ecec;
+      --tusklyy:  #8496a0;
+      --zelenyy:  #21e6a0;   /* акцент — изумруд */
+      --nebo:     #4aa8ff;   /* второй акцент — синий */
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--tekst);
+      font-family: "Consolas", "Segoe UI", system-ui, sans-serif;
+      line-height: 1.7;
+      overflow-x: hidden;
+
+      /* глубокий градиент вместо плоского чёрного */
+      background:
+        radial-gradient(ellipse 90% 60% at 15% 0%,   #10394a 0%, transparent 55%),
+        radial-gradient(ellipse 80% 60% at 90% 15%,  #16324f 0%, transparent 55%),
+        radial-gradient(ellipse 90% 70% at 50% 110%, #123a34 0%, transparent 60%),
+        linear-gradient(170deg, #071420 0%, #0a1a22 45%, #071016 100%);
+      background-attachment: fixed;
+    }
+
+    /* ==========================================================
+       ЖИВЫЕ ПЯТНА СВЕТА
+       ========================================================== */
+    .siyanie { position: fixed; inset: 0; z-index: -3; overflow: hidden; pointer-events: none; }
+
+    .pyatno { position: absolute; border-radius: 50%; filter: blur(120px); }
+
+    .pyatno-1 {
+      width: 560px; height: 560px; background: #1f7fc4; opacity: 0.30;
+      top: -180px; left: -140px; animation: plavat-1 20s ease-in-out infinite;
+    }
+    .pyatno-2 {
+      width: 480px; height: 480px; background: #14b98a; opacity: 0.26;
+      top: 220px; right: -160px; animation: plavat-2 24s ease-in-out infinite;
+    }
+    .pyatno-3 {
+      width: 420px; height: 420px; background: #2b6ee0; opacity: 0.20;
+      bottom: -180px; left: 30%; animation: plavat-3 28s ease-in-out infinite;
+    }
+
+    @keyframes plavat-1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(90px,70px) scale(1.15)} }
+    @keyframes plavat-2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-80px,100px) scale(0.9)} }
+    @keyframes plavat-3 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(70px,-80px) scale(1.1)} }
+
+    /* ==========================================================
+       ФОН «МАТРИЦА» — поверх градиента, полупрозрачный
+       ========================================================== */
+    #matrica {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      display: block;
+      opacity: 0.5;
+    }
+
+    /* лёгкое затемнение, чтобы текст читался */
+    .zatemnenie {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background: radial-gradient(ellipse 75% 60% at 50% 35%, rgba(6,16,22,0.25), rgba(6,16,22,0.72) 80%);
+    }
+
+    /* ==========================================================
+       ОБЁРТКА
+       ========================================================== */
+    .obertka { max-width: 840px; margin: 0 auto; padding: 100px 24px 80px; position: relative; }
+
+    /* ==========================================================
+       ШАПКА
+       ========================================================== */
+    .shapka { display: flex; align-items: center; gap: 36px; flex-wrap: wrap; }
+
+    /* круглая рамка со светящимся кольцом */
+    .ramka-foto {
+      position: relative;
+      width: 172px;
+      height: 172px;
+      flex-shrink: 0;
+      padding: 3px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, var(--zelenyy), var(--nebo), #7a5cff, var(--zelenyy));
+      animation: krutit 9s linear infinite;
+    }
+
+    @keyframes krutit { to { transform: rotate(360deg); } }
+
+    /* содержимое крутиться не должно — вращаем обратно */
+    .okoshko {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #08131a;
+      animation: krutit-nazad 9s linear infinite;
+    }
+
+    @keyframes krutit-nazad { to { transform: rotate(-360deg); } }
+
+    .ramka-foto::after {
+      content: "";
+      position: absolute;
+      inset: -18px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(33,230,160,0.35), transparent 70%);
+      filter: blur(26px);
+      z-index: -1;
+    }
+
+    /* фото: приближено и наведено на лицо */
+    .foto {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 58%;
+      transform: scale(1.75);
+      display: block;
+      filter: contrast(1.05) saturate(0.92);
+    }
+
+    .status {
+      display: inline-flex; align-items: center; gap: 9px;
+      font-size: 12.5px; letter-spacing: 1px; text-transform: uppercase;
+      color: var(--zelenyy);
+      background: rgba(33,230,160,0.07);
+      border: 1px solid rgba(33,230,160,0.25);
+      border-radius: 999px;
+      padding: 5px 14px;
+      margin-bottom: 16px;
+    }
+
+    .tochka {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--zelenyy);
+      animation: migat 2s ease-in-out infinite;
+    }
+
+    @keyframes migat {
+      0%,100% { opacity: 1;   box-shadow: 0 0 0 0 rgba(33,230,160,0.45); }
+      50%     { opacity: 0.4; box-shadow: 0 0 0 8px rgba(33,230,160,0); }
+    }
+
+    .imya {
+      margin: 0;
+      font-size: 62px;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.05;
+      background: linear-gradient(115deg, #ffffff 15%, var(--zelenyy) 55%, var(--nebo) 95%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .kursor {
+      display: inline-block;
+      width: 4px; height: 0.8em;
+      background: var(--zelenyy);
+      margin-left: 8px;
+      animation: kursor-migat 1.1s step-end infinite;
+    }
+
+    @keyframes kursor-migat { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+
+    .dolzhnost { margin: 10px 0 0; font-size: 19px; color: var(--tekst); }
+    .podpis    { margin: 4px 0 0; color: var(--tusklyy); font-size: 14.5px; letter-spacing: 0.4px; }
+
+    /* ==========================================================
+       РАЗДЕЛЫ
+       ========================================================== */
+    section { margin-top: 76px; }
+
+    h2 {
+      display: flex; align-items: center; gap: 14px;
+      font-size: 12.5px; text-transform: uppercase; letter-spacing: 3px;
+      color: var(--zelenyy); font-weight: 700; margin: 0 0 26px;
+    }
+
+    h2::before { content: "//"; opacity: 0.5; }
+
+    h2::after {
+      content: ""; flex: 1; height: 1px;
+      background: linear-gradient(90deg, rgba(33,230,160,0.35), transparent);
+    }
+
+    p { margin: 0 0 16px; color: #bcc9cc; }
+
+    /* ==========================================================
+       КАРТОЧКИ РАБОТ
+       ========================================================== */
+    .rabota {
+      position: relative;
+      background: var(--steklo);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--ramka);
+      border-radius: 16px;
+      padding: 26px 28px;
+      margin-bottom: 16px;
+      overflow: hidden;
+      transition: transform 0.35s cubic-bezier(.2,.8,.2,1), border-color 0.35s, background 0.35s;
+    }
+
+    .rabota::before {
+      content: "";
+      position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+      background: linear-gradient(180deg, var(--zelenyy), var(--nebo));
+      transform: scaleY(0); transform-origin: top;
+      transition: transform 0.4s ease;
+    }
+
+    .rabota:hover {
+      transform: translateY(-5px);
+      border-color: rgba(33,230,160,0.4);
+      background: rgba(255,255,255,0.075);
+    }
+
+    .rabota:hover::before { transform: scaleY(1); }
+
+    .nomer { font-size: 12px; color: var(--zelenyy); letter-spacing: 2px; font-weight: 700; opacity: 0.85; }
+
+    .rabota h3 { margin: 6px 0 8px; font-size: 21px; font-weight: 700; color: #eef5f4; }
+    .rabota p  { margin: 0; color: var(--tusklyy); font-size: 15px; }
+
+    .metki { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 16px; }
+
+    .metka {
+      font-size: 11.5px; letter-spacing: 0.6px;
+      color: #92c8bb;
+      background: rgba(33,230,160,0.07);
+      border: 1px solid rgba(33,230,160,0.18);
+      border-radius: 5px;
+      padding: 3px 9px;
+    }
+
+    .ssylka {
+      display: inline-flex; align-items: center; gap: 8px; margin-top: 16px;
+      color: var(--zelenyy); text-decoration: none;
+      font-size: 14.5px; font-weight: 600; letter-spacing: 0.5px;
+    }
+
+    .ssylka .strelka { transition: transform 0.3s ease; }
+    .ssylka:hover .strelka { transform: translateX(6px); }
+
+    /* ==========================================================
+       НАВЫКИ
+       ========================================================== */
+    .navyki { display: flex; flex-wrap: wrap; gap: 11px; padding: 0; margin: 0; list-style: none; }
+
+    .navyki li {
+      background: var(--steklo);
+      border: 1px solid var(--ramka);
+      border-radius: 999px;
+      padding: 9px 20px;
+      font-size: 14px; letter-spacing: 0.5px; color: #c6d2d4;
+      transition: transform 0.25s, border-color 0.25s, color 0.25s, background 0.25s;
+      cursor: default;
+    }
+
+    .navyki li:hover {
+      transform: translateY(-3px);
+      border-color: rgba(33,230,160,0.45);
+      background: rgba(33,230,160,0.07);
+      color: #fff;
+    }
+
+    /* ==========================================================
+       КОНТАКТЫ
+       ========================================================== */
+    .kontakty-set { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+
+    .kontakt {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--steklo);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--ramka);
+      border-radius: 14px;
+      padding: 18px 20px;
+      text-decoration: none; color: var(--tekst);
+      transition: transform 0.3s, border-color 0.3s, background 0.3s;
+    }
+
+    .kontakt:hover {
+      transform: translateY(-4px);
+      border-color: rgba(33,230,160,0.4);
+      background: rgba(255,255,255,0.075);
+    }
+
+    .znachok {
+      width: 40px; height: 40px; flex-shrink: 0;
+      display: grid; place-items: center;
+      border-radius: 11px;
+      background: linear-gradient(135deg, rgba(33,230,160,0.16), rgba(74,168,255,0.16));
+      border: 1px solid rgba(33,230,160,0.18);
+    }
+
+    .znachok svg { width: 20px; height: 20px; fill: #a8ecd4; }
+
+    .kontakt .chto      { font-size: 11.5px; color: var(--tusklyy); letter-spacing: 1.2px; text-transform: uppercase; }
+    .kontakt .znachenie { font-size: 15px; word-break: break-all; }
+
+    footer {
+      margin-top: 90px; padding-top: 24px;
+      border-top: 1px solid var(--ramka);
+      color: var(--tusklyy); font-size: 13px; letter-spacing: 0.5px;
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+    }
+
+    /* ==========================================================
+       ПОЯВЛЕНИЕ ПРИ ПРОКРУТКЕ
+       ========================================================== */
+    .poyavlenie {
+      opacity: 0; transform: translateY(26px);
+      transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.2,.8,.2,1);
+    }
+    .poyavlenie.vidno { opacity: 1; transform: none; }
+
+    /* ==========================================================
+       ТЕЛЕФОН
+       ========================================================== */
+    @media (max-width: 620px) {
+      .obertka { padding: 60px 18px 60px; }
+      .imya { font-size: 40px; }
+      .ramka-foto { width: 132px; height: 132px; }
+      .shapka { gap: 24px; }
+      section { margin-top: 56px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .poyavlenie { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="siyanie">
+    <div class="pyatno pyatno-1"></div>
+    <div class="pyatno pyatno-2"></div>
+    <div class="pyatno pyatno-3"></div>
+  </div>
+
+  <canvas id="matrica"></canvas>
+  <div class="zatemnenie"></div>
+
+  <div class="obertka">
+
+    <header class="shapka">
+      <div class="ramka-foto">
+        <div class="okoshko">
+          <img class="foto" src="foto.jpg" alt="Фотография Backy">
+        </div>
+      </div>
+      <div>
+        <span class="status"><span class="tochka"></span>Открыт к первым задачам</span>
+        <h1 class="imya">Backy<span class="kursor"></span></h1>
+        <p class="dolzhnost">Начинающий веб-разработчик</p>
+        <p class="podpis">HTML · CSS · Git · терминал · учусь каждый день</p>
+      </div>
+    </header>
+
+    <section class="poyavlenie">
+      <h2>Обо мне</h2>
+      <p>
+        Пришёл в разработку с нуля — без опыта в IT. Начал с самого начала:
+        разобрался, как устроен файл и папка, освоил терминал, научился вести
+        историю проектов в Git.
+      </p>
+      <p>
+        Сейчас пишу страницы на HTML и CSS, работаю в PowerShell, веду проекты
+        в Git и выкладываю их на GitHub. Учусь системно: каждое занятие
+        записываю в собственный конспект, чтобы ничего не терялось.
+      </p>
+    </section>
+
+    <section class="poyavlenie">
+      <h2>Учебные работы</h2>
+
+      <article class="rabota">
+        <span class="nomer">01</span>
+        <h3>Сайт-биография</h3>
+        <p>
+          Страница про дружбу двух персонажей. Тёмная и светлая тема,
+          иллюстрации нарисованы кодом на SVG — ни одной чужой картинки.
+        </p>
+        <div class="metki">
+          <span class="metka">HTML</span>
+          <span class="metka">CSS</span>
+          <span class="metka">SVG</span>
+        </div>
+      </article>
+
+      <article class="rabota">
+        <span class="nomer">02</span>
+        <h3>Первая страница своими руками</h3>
+        <p>
+          Написал HTML с нуля, без подсказок: структура документа, заголовки,
+          абзацы, кодировка. Разобрал каждую строчку — что делает и зачем.
+        </p>
+        <div class="metki">
+          <span class="metka">HTML</span>
+          <span class="metka">Основы</span>
+        </div>
+      </article>
+
+      <article class="rabota">
+        <span class="nomer">03</span>
+        <h3>Учебный репозиторий proekt</h3>
+        <p>
+          Тренировка Git: коммиты, ветки, слияние, разбор конфликта вручную,
+          файл .gitignore. Вся история открыта — видно, как шло обучение.
+        </p>
+        <div class="metki">
+          <span class="metka">Git</span>
+          <span class="metka">GitHub</span>
+          <span class="metka">PowerShell</span>
+        </div>
+        <a class="ssylka" href="https://github.com/bhtrkaumov-hub/proekt">
+          Смотреть на GitHub <span class="strelka">→</span>
+        </a>
+      </article>
+    </section>
+
+    <section class="poyavlenie">
+      <h2>Что умею</h2>
+      <ul class="navyki">
+        <li>HTML</li>
+        <li>CSS</li>
+        <li>Git</li>
+        <li>GitHub</li>
+        <li>PowerShell</li>
+        <li>Markdown</li>
+        <li>Работа в терминале</li>
+      </ul>
+    </section>
+
+    <section class="poyavlenie">
+      <h2>Связаться</h2>
+      <div class="kontakty-set">
+
+        <a class="kontakt" href="mailto:bhtrkaumov@gmail.com">
+          <span class="znachok">
+            <svg viewBox="0 0 24 24"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4.2-8 4.8-8-4.8V6l8 4.8L20 6v2.2z"/></svg>
+          </span>
+          <span>
+            <span class="chto">Почта</span><br>
+            <span class="znachenie">bhtrkaumov@gmail.com</span>
+          </span>
+        </a>
+
+        <a class="kontakt" href="https://github.com/bhtrkaumov-hub">
+          <span class="znachok">
+            <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.95 0-1.09.39-1.99 1.03-2.69-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.03a9.5 9.5 0 0 1 5 0c1.91-1.3 2.75-1.03 2.75-1.03.55 1.38.2 2.4.1 2.65.64.7 1.03 1.6 1.03 2.69 0 3.85-2.34 4.7-4.57 4.95.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></svg>
+          </span>
+          <span>
+            <span class="chto">GitHub</span><br>
+            <span class="znachenie">bhtrkaumov-hub</span>
+          </span>
+        </a>
+
+      </div>
+    </section>
+
+    <footer>
+      <span>Сделано вручную на HTML и CSS</span>
+      <span>2026</span>
+    </footer>
+
+  </div>
+
+  <script>
+    /* ==========================================================
+       ФОН «МАТРИЦА» — падающие символы поверх градиента
+       ========================================================== */
+    (function () {
+      const holst = document.getElementById('matrica');
+      const kist = holst.getContext('2d');
+
+      const simvoly = 'アイウエオカキクケコサシスセソタチツテト0123456789<>/\\{}[]#$%&*+=';
+      const razmer = 16;
+      let stolbcy = [];
+
+      function podognat() {
+        holst.width = window.innerWidth;
+        holst.height = window.innerHeight;
+        const kolvo = Math.floor(holst.width / razmer);
+        stolbcy = new Array(kolvo).fill(0).map(() => Math.random() * -60);
+      }
+
+      function risovat() {
+        // Гасим старые буквы, НЕ закрашивая фон краской.
+        // 'destination-out' = «стирай уже нарисованное», градиент под холстом остаётся виден.
+        kist.globalCompositeOperation = 'destination-out';
+        kist.fillStyle = 'rgba(0,0,0,0.075)';
+        kist.fillRect(0, 0, holst.width, holst.height);
+
+        kist.globalCompositeOperation = 'source-over';
+        kist.font = razmer + 'px monospace';
+
+        for (let i = 0; i < stolbcy.length; i++) {
+          const znak = simvoly[Math.floor(Math.random() * simvoly.length)];
+          const x = i * razmer;
+          const y = stolbcy[i] * razmer;
+
+          kist.fillStyle = Math.random() > 0.985 ? '#d8fff0' : 'rgba(33, 230, 160, 0.45)';
+          kist.fillText(znak, x, y);
+
+          if (y > holst.height && Math.random() > 0.975) stolbcy[i] = 0;
+          stolbcy[i]++;
+        }
+      }
+
+      podognat();
+      window.addEventListener('resize', podognat);
+
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        risovat();
+      } else {
+        setInterval(risovat, 55);
+      }
+    })();
+
+    /* ==========================================================
+       ПОЯВЛЕНИЕ РАЗДЕЛОВ ПРИ ПРОКРУТКЕ
+       ========================================================== */
+    const nabludatel = new IntersectionObserver((zapisi) => {
+      zapisi.forEach((z) => {
+        if (z.isIntersecting) {
+          z.target.classList.add('vidno');
+          nabludatel.unobserve(z.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.poyavlenie').forEach((el) => nabludatel.observe(el));
+  </script>
+
+</body>
+</html>
